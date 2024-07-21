@@ -4,6 +4,7 @@ import { useState } from "react"
 export default function Game() {
     const [history, setHistory] = useState([Array(9).fill(null)])
     const [currentMove, setCurrentMove] = useState(0)
+    const [sort, setSort] = useState('asc')
     const xIsNext = currentMove % 2 === 0
     const currentSquares = history[currentMove]
 
@@ -17,15 +18,25 @@ export default function Game() {
         setCurrentMove(nextMove)
     }
 
-    function handleChange() {
-        console.log('changed :D')
+    function handleChange(event) {
+        setSort(event.currentTarget.value)
     }
 
-    const moves = history.map((squares, move) => {
+    const sortedHistory = sort == 'asc'
+        ? [...history]
+        : [...history.toReversed()]
 
-        let description = (move > 0)
-            ? `Go to move #${move}`
-            : `Go to game start`
+    const moves = sortedHistory.map((squares, move) => {
+
+        const isReversed = sort === 'desc'
+        // update gameStart index to be first or last
+        const gameStart = isReversed ? move === sortedHistory.length - 1 : move === 0
+        // update move to count forwards or backwards
+        move = isReversed ? sortedHistory.length - move - 1 : move
+
+        let description = (gameStart)
+            ? `Go to game start`
+            : `Go to move #${move}`
 
         const textItem = (
             <li key={move}>
@@ -52,7 +63,7 @@ export default function Game() {
                 <Board xIsNext={xIsNext} squares={currentSquares} onPlay={handlePlay}/>
             </div>
             <div className="game-info">
-                <select name="sort" onChange={handleChange}>
+                <select name="sort" onChange={ e => handleChange(e) }>
                     <option value="asc">Ascending</option>
                     <option value="desc">Descending</option>
                 </select>
