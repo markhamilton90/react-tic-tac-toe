@@ -22,6 +22,7 @@ export default function Game() {
         setSort(event.currentTarget.value)
     }
 
+    // reverse the move history if we have sort set to 'desc'
     const sortedHistory = sort == 'asc'
         ? [...history]
         : [...history.toReversed()]
@@ -87,10 +88,14 @@ function Board({xIsNext, squares, onPlay}) {
         onPlay(nextSquares)
     }
 
-    const winner = calculateWinner(squares)
+    const line = calculateWinner(squares) ?? []
+    const noMovesLeft = !squares.includes(null)
     let status;
-    if (winner) {
-        status = `Winner: ${winner}`
+
+    if (line.length) {
+        status = `Winner: ${squares[line[0]]}`
+    } else if (noMovesLeft) {
+        status = `Draw game`
     } else {
         status = `Next player: ${ xIsNext ? 'X' : 'O' }`
     }
@@ -113,6 +118,7 @@ function Board({xIsNext, squares, onPlay}) {
                                     key={index}
                                     value={squares[index]}
                                     onSquareClick={() => handleClick(index)}
+                                    highlight={line.includes(index) && 'highlight'}
                                 />
                             ))
                         }
@@ -124,9 +130,11 @@ function Board({xIsNext, squares, onPlay}) {
 }
 
 /* Square component */
-function Square({ value, onSquareClick }) {
+function Square({ value, onSquareClick, highlight }) {
     return (
-        <button className="square" onClick={onSquareClick}>
+        <button
+            className={`square ${highlight}`}
+            onClick={onSquareClick}>
             {value}
         </button>
     )
@@ -147,7 +155,7 @@ function calculateWinner(squares) {
     for (let i = 0; i < lines.length; i++) {
         const [a, b, c] = lines[i];
         if (squares[a] && squares[a] === squares[b] && squares[a] === squares[c]) {
-            return squares[a];
+            return lines[i];
         }
     }
     return null;
